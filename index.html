@@ -1,14 +1,112 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Coockie Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <title>Cookie Calculator</title>
+    <style>
+        body {
+        font-family: 'Patrick Hand', cursive; 
+        background-color: #ffce91;
+        text-align: center;
+        padding: 20px;
+        font-size: 1.2rem; /* Iets groter maken leest fijn bij handgetekende letters */
+        }
+
+        #list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 0;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        li {
+            list-style: none;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid #ffe0b2;
+            transition: transform 0.1s;
+        }
+
+        li:hover {
+            transform: translateY(-1px);
+            border-color: #ffb74d;
+        }
+
+        #list li {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #5d4037;
+        }
+
+        li:nth-child(even) {
+            transform: rotate(0.5deg);
+        }
+
+        li:nth-child(odd) {
+            transform: rotate(-0.5deg);
+        }
+
+        /* slider */
+        .slider-container {
+            margin: 30px 0;
+            width: 100%;
+            max-width: 400px;
+            display: inline-block;
+        }
+
+        #slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            background: #e0e0e0;
+            outline: none;
+            transition: background 0.3s;
+
+        }
+
+        #slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #d84315;
+            cursor: pointer;
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease-in-out;
+        }
+        #slider::-webkit-slider-thumb:active {
+            transform: scale(1.3);
+            background: #bf350c;
+        }
+
+        /* firefox */
+        #slider::-moz-range-thumb {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #d84315;
+        cursor: pointer;
+        border: 3px solid #fff;
+        }
+
+    </style>
 </head>
 <body>
 
     <h1>Cookie Calculator</h1>
 
     <p>Number of cookies: <span id="cookieCount">20</span></p>
-    <input type="range" id="slider" min="1" max="50" value="20">
+
+    <div class="slider-container">
+        <input type="range" id="slider" min="1" max="50" value="20">
+    </div>
+
 
     <ul id="list">    
         </ul>
