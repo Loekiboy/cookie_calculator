@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coockie Calculator</title>
+</head>
+<body>
+
+    <h1>Cookie Calculator</h1>
+
+    <p>Number of cookies: <span id="cookieCount">20</span></p>
+    <input type="range" id="slider" min="1" max="50" value="20">
+
+    <ul id="list">    
+        </ul>
+
+    <script>
+        const slider = document.getElementById('slider');
+        const tekst = document.getElementById('cookieCount');
+        const lijst = document.getElementById('list')
+
+        const base = 20;
+
+        function bereken() {
+            const aantal = slider.value;
+            tekst.innerText = aantal;
+
+            const factor = aantal / base;
+
+            const flour = Math.round(281 * factor);
+            const butter = Math.round(170 * factor);
+            const brownSugar = Math.round(150 * factor);
+            const whiteSugar = Math.round(100 * factor);
+            const chips = Math.round(225 * factor);
+
+            const vanilla = (2 * factor).toFixed(1);
+            const soda = (1 * factor).toFixed(1);
+            const salt = (0.5 * factor).toFixed(1);
+
+            // egg logic
+            let eggAmount = 1 * factor;
+            let eggText = "";
+            if (eggAmount < 0.5) {
+                eggText = "1 egg (wisked, use half)";
+            } else {
+                eggText = Math.round(eggAmount) + " eggs";
+            }
+
+            lijst.innerHTML = `
+                <li>🌾 ${flour}g Flour</li>
+                <li>🧈 ${butter}g Butter (melted)</li>
+                <li>🟤 ${brownSugar}g Brown sugar</li>
+                <li>⚪ ${whiteSugar}g Granulated sugar</li>
+                <li>🥚 ${eggText}</li>
+                <li>🍦 ${vanilla} tsp Vanilla extract</li>
+                <li>🧂 ${soda} tsp Baking soda</li>
+                <li>🧂 ${salt} tsp Salt</li>
+                <li>🍫 ${chips}g Chocolate chips</li>
+            `;
+
+        }
+
+        slider.oninput = bereken;
+
+        bereken();
+    </script>
+
+</body>
+</html>
