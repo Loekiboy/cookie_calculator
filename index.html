@@ -95,6 +95,17 @@
         border: 3px solid #fff;
         }
 
+        /* shake */
+        @keyframes bump {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.025) rotate(var(--random-deg, 1deg)); }
+            100% { transform: scale(1); }
+        }
+
+        .bump-effect {
+            animation: bump 0.1s ease-out;
+        }
+
     </style>
 </head>
 <body>
@@ -157,9 +168,52 @@
 
         }
 
-        slider.oninput = bereken;
+        slider.oninput = function() {
+            bereken();
+            playPop(this.value);
+
+            const cards = document.querySelectorAll('#list li');
+
+            cards.forEach(card => {
+                const randomDeg = (Math.random() * 2 - 1) + 'deg';
+                card.style.setProperty('--random-deg', randomDeg);
+                card.classList.remove('bump-effect');
+
+                void card.offsetWidth;
+                card.classList.add('bump-effect');
+            });
+
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        };
 
         bereken();
+
+        
+
+        // audio
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playPop(aantal) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sine';
+            const startFreq = 400 + (aantal * 5);
+            oscillator.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+            
+        }
     </script>
 
 </body>
