@@ -1,171 +1,125 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Patrick+Hand&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/poly-decomp.js/0.3.0/poly-decomp.min.js"></script>
-    <title>Cookie Calculator</title>
-    <style>
-        body {
-        font-family: 'Patrick Hand', cursive; 
-        background-color: #ffce91;
-        text-align: center;
-        padding: 20px;
-        font-size: 1.2rem; /* Iets groter maken leest fijn bij handgetekende letters */
-        }
+	<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Patrick+Hand&display=swap" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/poly-decomp.js/0.3.0/poly-decomp.min.js"></script>
+	<title>Cookie Calculator</title>
+	<style>
+		body {
+			font-family: 'Patrick Hand', cursive; 
+			background-color: #ffce91;
+			text-align: center;
+			padding: 20px;
+			font-size: 1.2rem;
+		}
 
-        #list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            padding: 0;
-            max-width: 800px;
-            margin: 20px auto;
-        }
+		#list {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 15px;
+			padding: 0;
+			max-width: 800px;
+			margin: 20px auto;
+		}
 
-        li {
-            list-style: none;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border: 2px solid #ffe0b2;
-            transition: transform 0.1s;
-        }
+		li {
+			list-style: none;
+			background: white;
+			padding: 20px;
+			border-radius: 15px;
+			box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+			border: 2px solid #ffe0b2;
+			transition: transform 0.1s;
+		}
 
-        li:hover {
-            transform: translateY(-1px);
-            border-color: #ffb74d;
-        }
+		#list li {
+			font-weight: bold;
+			font-size: 1.3rem;
+			color: #5d4037;
+		}
 
-        #list li {
-            font-weight: bold;
-            font-size: 1.3rem;
-            color: #5d4037;
-        }
+		.slider-container {
+			margin: 30px 0;
+			width: 100%;
+			max-width: 400px;
+			display: inline-block;
+		}
 
-        li:nth-child(even) {
-            transform: rotate(1deg);
-        }
+		#slider {
+			-webkit-appearance: none;
+			width: 100%;
+			height: 15px;
+			background: #e0e0e0;
+			outline: none;
+			border-radius: 10px;
+		}
 
-        li:nth-child(odd) {
-            transform: rotate(-1deg);
-        }
+		#slider::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			background: #d84315;
+			cursor: pointer;
+			border: 3px solid #fff;
+		}
 
-        /* slider */
-        .slider-container {
-            margin: 30px 0;
-            width: 100%;
-            max-width: 400px;
-            display: inline-block;
-        }
+		@keyframes bump {
+			0% { transform: scale(1); }
+			50% { transform: scale(1.025) rotate(var(--random-deg, 1deg)); }
+			100% { transform: scale(1); }
+		}
 
-        #slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 15px;
-            background: #e0e0e0;
-            outline: none;
-            transition: background 0.3s;
+		.bump-effect { animation: bump 0.1s ease-out; }
 
-        }
+		#cookieCount {
+			display: inline-block;
+			transition: transform 0.1s ease-out;
+		}
 
-        #slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #d84315;
-            cursor: pointer;
-            border: 3px solid #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            transition: transform 0.1s ease-in-out;
-        }
-        #slider::-webkit-slider-thumb:active {
-            transform: scale(1.3);
-            background: #bf350c;
-        }
+		.count-bump {
+			transform: scale(1.3) !important;
+			color: #d84315;
+		}
 
-        /* firefox */
-        #slider::-moz-range-thumb {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: #d84315;
-        cursor: pointer;
-        border: 3px solid #fff;
-        }
-
-        /* shake */
-        @keyframes bump {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.025) rotate(var(--random-deg, 1deg)); }
-            100% { transform: scale(1); }
-        }
-
-        .bump-effect {
-            animation: bump 0.1s ease-out;
-        }
-
-        #cookieCount {
-            display: inline-block;
-            transition: transform 0.1s ease-out;
-        }
-
-        .count-bump {
-            transform: scale(1.3);
-            color: #d84315;
-        }
-
-        #cookie-bin {
-            width: 100%;
-            max-width: 500px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            margin: 20px auto;
-            position: relative;
-            overflow: hidden;
-            border: 3px dashed #d84315;
-        }
-
-        .cookie-particle {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-image: url('images/cookie.svg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.5s;
-        }
-
-    </style>
+		#cookie-bin {
+			width: 100%;
+			max-width: 500px;
+			height: 300px;
+			background: rgba(255, 255, 255, 0.3);
+			border-radius: 20px;
+			margin: 20px auto;
+			position: relative;
+			border: 3px dashed #d84315;
+			overflow: hidden;
+		}
+	</style>
 </head>
 <body>
 
-    <h1>Cookie Calculator</h1>
+	<h1>Cookie Calculator</h1>
 
-    <div id="cookie-bin"></div>
+	<div id="cookie-bin"></div>
 
-    <p>Number of cookies: <span id="cookieCount">20</span></p>
+	<p>Number of cookies: <span id="cookieCount">20</span></p>
 
-    <div class="slider-container">
-        <input type="range" id="slider" min="1" max="50" value="20">
-    </div>
+	<div class="slider-container">
+		<input type="range" id="slider" min="1" max="50" value="20">
+	</div>
 
+	<ul id="list"></ul>
 
-    <ul id="list">    
-        </ul>
-
-<script>
+	<script>
 		const slider = document.getElementById('slider');
 		const tekst = document.getElementById('cookieCount');
 		const lijst = document.getElementById('list');
 		const bin = document.getElementById('cookie-bin');
 		const base = 20;
 
-		const { Engine, Render, Runner, Bodies, Composite, World, Vertices, Svg } = Matter;
+		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+		const { Engine, Render, Runner, Bodies, World, Vertices, Body } = Matter;
 
 		const engine = Engine.create();
 		const render = Render.create({
@@ -179,9 +133,9 @@
 			}
 		});
 
-		const ground = Bodies.rectangle(250, 310, 510, 60, { isStatic: true, render: { visible: false } });
-		const leftWall = Bodies.rectangle(-10, 150, 20, 300, { isStatic: true, render: { visible: false } });
-		const rightWall = Bodies.rectangle(510, 150, 20, 300, { isStatic: true, render: { visible: false } });
+		const ground = Bodies.rectangle(250, 310, 600, 60, { isStatic: true });
+		const leftWall = Bodies.rectangle(-10, 150, 20, 300, { isStatic: true });
+		const rightWall = Bodies.rectangle(510, 150, 20, 300, { isStatic: true });
 		World.add(engine.world, [ground, leftWall, rightWall]);
 
 		Render.run(render);
@@ -189,36 +143,83 @@
 
 		let cookieBodies = [];
 
-        function spawnCookie() {
-		    const x = Math.random() * 400 + 50;
-		
-	    	const pathData = "M320.93026,252.58352c0,16.62776 -194.49257,16.62776 -194.49257,0c0,-5.75078 5.30961,-12.0243 14.47799,-15.17486c17.34098,-5.95892 48.48616,-5.86051 83.61879,-5.86051c31.68903,0 59.54182,-1.30051 77.05333,3.37312c12.16759,3.2474 19.34248,10.84534 19.34248,17.66225z";
-		
-	    	let vertices = Vertices.fromPath(pathData);
+		function playPop(aantal) {
+			const oscillator = audioCtx.createOscillator();
+			const gainNode = audioCtx.createGain();
+			oscillator.type = 'sine';
+			oscillator.frequency.setValueAtTime(400 + (aantal * 5), audioCtx.currentTime);
+			oscillator.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+			gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+			gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+			oscillator.connect(gainNode);
+			gainNode.connect(audioCtx.destination);
+			oscillator.start();
+			oscillator.stop(audioCtx.currentTime + 0.1);
+		}
 
-	    	vertices = Matter.Vertices.scale(vertices, 0.18, 0.18);
+		function spawnCrumb(x, y) {
+			const spreadX = (Math.random() - 0.5) * 30;
+			const spreadY = (Math.random() - 0.5) * 30;
 
-	    	const cookie = Bodies.fromVertices(x, -50, [vertices], {
-	    		restitution: 0.2,
-	    		friction: 0.2,
-	    		render: {
-	    			sprite: {
-	    				texture: 'images/cookie.svg',
-	    				xScale: 0.4,
-		    			yScale: 0.4
-		    		}
-			    }
-		    }, true);
+			const crumb = Bodies.polygon(x + spreadX, y + spreadY, 5, Math.random() * 4 + 2, {
+				restitution: 0.6,
+				friction: 0.1,
+				render: {
+					fillStyle: '#ac5922'
+				}
+			});
+			
+			Body.setVelocity(crumb, { x: spreadX / 5, y: -2 });
 
-		    if (cookie) {
-		    	cookieBodies.push(cookie);
-		    	World.add(engine.world, cookie);
-		    }
-	    }
+			World.add(engine.world, crumb);
+
+			setTimeout(() => {
+				let opacity = 1;
+				const fadeInterval = setInterval(() => {
+					opacity -= 0.05; 
+					if (opacity <= 0) {
+						clearInterval(fadeInterval);
+						World.remove(engine.world, crumb);
+					} else {
+						crumb.render.opacity = opacity;
+					}
+				}, 50);
+			}, 3000);
+		}
+
+		function spawnCookie() {
+			const x = Math.random() * 400 + 50;
+			const shape = [{ x: 0, y: 20 }, { x: 50, y: 0 }, { x: 100, y: 20 }, { x: 50, y: 25 }];
+			
+			const cookie = Bodies.fromVertices(x, -50, [shape], {
+				restitution: 0.2,
+				friction: 0.5,
+				render: {
+					sprite: { texture: 'images/cookie.png', xScale: 0.25, yScale: 0.25 }
+				}
+			});
+
+			if (cookie) {
+				cookieBodies.push(cookie);
+				World.add(engine.world, cookie);
+			}
+		}
 
 		function removeCookie() {
 			const cookie = cookieBodies.pop();
-			if (cookie) World.remove(engine.world, cookie);
+			if (cookie) {
+				const posX = cookie.position.x;
+				const posY = cookie.position.y;
+				
+				World.remove(engine.world, cookie);
+
+				const aantalKruimels = Math.floor(Math.random() * 3) + 1;
+				
+
+				for(let i = 0; i < aantalKruimels; i++) {
+					spawnCrumb(posX, posY);
+				}
+			}
 		}
 
 		function updateCookiePhysics() {
@@ -235,7 +236,6 @@
 			const aantal = slider.value;
 			tekst.innerText = aantal;
 			const factor = aantal / base;
-
 			const ingredients = {
 				flour: Math.round(281 * factor),
 				butter: Math.round(170 * factor),
@@ -246,9 +246,7 @@
 				soda: (1 * factor).toFixed(1),
 				salt: (0.5 * factor).toFixed(1)
 			};
-
-			let eggText = (factor < 0.5) ? "1 egg (whisked, use half)" : Math.round(1 * factor) + " eggs";
-
+			let eggText = (factor <= 1) ? "1 egg + 1 egg yolk" : Math.round(1 * factor) + " eggs" + " + " + Math.round(1 * factor) + " eggs yolks";
 			lijst.innerHTML = `
 				<li>🌾 ${ingredients.flour}g Flour</li>
 				<li>🧈 ${ingredients.butter}g Butter</li>
@@ -266,37 +264,21 @@
 			bereken();
 			updateCookiePhysics();
 			playPop(this.value);
-
-			document.querySelectorAll('#list li').forEach(card => {
+			if (navigator.vibrate) navigator.vibrate(10);
+			tekst.classList.remove('count-bump');
+			void tekst.offsetWidth; 
+			tekst.classList.add('count-bump');
+			const cards = document.querySelectorAll('#list li');
+			cards.forEach(card => {
+				card.style.setProperty('--random-deg', (Math.random() * 4 - 2) + 'deg');
 				card.classList.remove('bump-effect');
 				void card.offsetWidth;
 				card.classList.add('bump-effect');
 			});
-
-			if (navigator.vibrate) navigator.vibrate(10);
-			tekst.classList.remove('count-bump');
-			void tekst.offsetWidth;
-			tekst.classList.add('count-bump');
 		};
-
-		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-		function playPop(aantal) {
-			const oscillator = audioCtx.createOscillator();
-			const gainNode = audioCtx.createGain();
-			oscillator.type = 'sine';
-			oscillator.frequency.setValueAtTime(400 + (aantal * 5), audioCtx.currentTime);
-			oscillator.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
-			gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-			gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
-			oscillator.connect(gainNode);
-			gainNode.connect(audioCtx.destination);
-			oscillator.start();
-			oscillator.stop(audioCtx.currentTime + 0.1);
-		}
 
 		bereken();
 		updateCookiePhysics();
 	</script>
-
 </body>
 </html>
