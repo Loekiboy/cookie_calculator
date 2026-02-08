@@ -2,6 +2,8 @@
 <html>
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/poly-decomp.js/0.3.0/poly-decomp.min.js"></script>
     <title>Cookie Calculator</title>
     <style>
         body {
@@ -43,11 +45,11 @@
         }
 
         li:nth-child(even) {
-            transform: rotate(0.5deg);
+            transform: rotate(1deg);
         }
 
         li:nth-child(odd) {
-            transform: rotate(-0.5deg);
+            transform: rotate(-1deg);
         }
 
         /* slider */
@@ -106,11 +108,45 @@
             animation: bump 0.1s ease-out;
         }
 
+        #cookieCount {
+            display: inline-block;
+            transition: transform 0.1s ease-out;
+        }
+
+        .count-bump {
+            transform: scale(1.3);
+            color: #d84315;
+        }
+
+        #cookie-bin {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+            border: 3px dashed #d84315;
+        }
+
+        .cookie-particle {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-image: url('images/cookie.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.5s;
+        }
+
     </style>
 </head>
 <body>
 
     <h1>Cookie Calculator</h1>
+
+    <div id="cookie-bin"></div>
 
     <p>Number of cookies: <span id="cookieCount">20</span></p>
 
@@ -122,99 +158,145 @@
     <ul id="list">    
         </ul>
 
-    <script>
-        const slider = document.getElementById('slider');
-        const tekst = document.getElementById('cookieCount');
-        const lijst = document.getElementById('list')
+<script>
+		const slider = document.getElementById('slider');
+		const tekst = document.getElementById('cookieCount');
+		const lijst = document.getElementById('list');
+		const bin = document.getElementById('cookie-bin');
+		const base = 20;
 
-        const base = 20;
+		const { Engine, Render, Runner, Bodies, Composite, World, Vertices, Svg } = Matter;
 
-        function bereken() {
-            const aantal = slider.value;
-            tekst.innerText = aantal;
+		const engine = Engine.create();
+		const render = Render.create({
+			element: bin,
+			engine: engine,
+			options: {
+				width: 500,
+				height: 300,
+				wireframes: false,
+				background: 'transparent'
+			}
+		});
 
-            const factor = aantal / base;
+		const ground = Bodies.rectangle(250, 310, 510, 60, { isStatic: true, render: { visible: false } });
+		const leftWall = Bodies.rectangle(-10, 150, 20, 300, { isStatic: true, render: { visible: false } });
+		const rightWall = Bodies.rectangle(510, 150, 20, 300, { isStatic: true, render: { visible: false } });
+		World.add(engine.world, [ground, leftWall, rightWall]);
 
-            const flour = Math.round(281 * factor);
-            const butter = Math.round(170 * factor);
-            const brownSugar = Math.round(150 * factor);
-            const whiteSugar = Math.round(100 * factor);
-            const chips = Math.round(225 * factor);
+		Render.run(render);
+		Runner.run(Runner.create(), engine);
 
-            const vanilla = (2 * factor).toFixed(1);
-            const soda = (1 * factor).toFixed(1);
-            const salt = (0.5 * factor).toFixed(1);
+		let cookieBodies = [];
 
-            // egg logic
-            let eggAmount = 1 * factor;
-            let eggText = "";
-            if (eggAmount < 0.5) {
-                eggText = "1 egg (wisked, use half)";
-            } else {
-                eggText = Math.round(eggAmount) + " eggs";
-            }
+        function spawnCookie() {
+		    const x = Math.random() * 400 + 50;
+		
+	    	const pathData = "M320.93026,252.58352c0,16.62776 -194.49257,16.62776 -194.49257,0c0,-5.75078 5.30961,-12.0243 14.47799,-15.17486c17.34098,-5.95892 48.48616,-5.86051 83.61879,-5.86051c31.68903,0 59.54182,-1.30051 77.05333,3.37312c12.16759,3.2474 19.34248,10.84534 19.34248,17.66225z";
+		
+	    	let vertices = Vertices.fromPath(pathData);
 
-            lijst.innerHTML = `
-                <li>🌾 ${flour}g Flour</li>
-                <li>🧈 ${butter}g Butter (melted)</li>
-                <li>🟤 ${brownSugar}g Brown sugar</li>
-                <li>⚪ ${whiteSugar}g Granulated sugar</li>
-                <li>🥚 ${eggText}</li>
-                <li>🍦 ${vanilla} tsp Vanilla extract</li>
-                <li>🧂 ${soda} tsp Baking soda</li>
-                <li>🧂 ${salt} tsp Salt</li>
-                <li>🍫 ${chips}g Chocolate chips</li>
-            `;
+	    	vertices = Matter.Vertices.scale(vertices, 0.18, 0.18);
 
-        }
+	    	const cookie = Bodies.fromVertices(x, -50, [vertices], {
+	    		restitution: 0.2,
+	    		friction: 0.2,
+	    		render: {
+	    			sprite: {
+	    				texture: 'images/cookie.svg',
+	    				xScale: 0.4,
+		    			yScale: 0.4
+		    		}
+			    }
+		    }, true);
 
-        slider.oninput = function() {
-            bereken();
-            playPop(this.value);
+		    if (cookie) {
+		    	cookieBodies.push(cookie);
+		    	World.add(engine.world, cookie);
+		    }
+	    }
 
-            const cards = document.querySelectorAll('#list li');
+		function removeCookie() {
+			const cookie = cookieBodies.pop();
+			if (cookie) World.remove(engine.world, cookie);
+		}
 
-            cards.forEach(card => {
-                const randomDeg = (Math.random() * 2 - 1) + 'deg';
-                card.style.setProperty('--random-deg', randomDeg);
-                card.classList.remove('bump-effect');
+		function updateCookiePhysics() {
+			const gewenst = parseInt(slider.value);
+			const huidig = cookieBodies.length;
+			if (gewenst > huidig) {
+				for (let i = 0; i < (gewenst - huidig); i++) spawnCookie();
+			} else if (gewenst < huidig) {
+				for (let i = 0; i < (huidig - gewenst); i++) removeCookie();
+			}
+		}
 
-                void card.offsetWidth;
-                card.classList.add('bump-effect');
-            });
+		function bereken() {
+			const aantal = slider.value;
+			tekst.innerText = aantal;
+			const factor = aantal / base;
 
-            if (navigator.vibrate) {
-                navigator.vibrate(10);
-            }
-        };
+			const ingredients = {
+				flour: Math.round(281 * factor),
+				butter: Math.round(170 * factor),
+				brownSugar: Math.round(150 * factor),
+				whiteSugar: Math.round(100 * factor),
+				chips: Math.round(225 * factor),
+				vanilla: (2 * factor).toFixed(1),
+				soda: (1 * factor).toFixed(1),
+				salt: (0.5 * factor).toFixed(1)
+			};
 
-        bereken();
+			let eggText = (factor < 0.5) ? "1 egg (whisked, use half)" : Math.round(1 * factor) + " eggs";
 
-        
+			lijst.innerHTML = `
+				<li>🌾 ${ingredients.flour}g Flour</li>
+				<li>🧈 ${ingredients.butter}g Butter</li>
+				<li>🟤 ${ingredients.brownSugar}g Brown sugar</li>
+				<li>⚪ ${ingredients.whiteSugar}g White sugar</li>
+				<li>🥚 ${eggText}</li>
+				<li>🍦 ${ingredients.vanilla} tsp Vanilla</li>
+				<li>🧂 ${ingredients.soda} tsp Soda</li>
+				<li>🧂 ${ingredients.salt} tsp Salt</li>
+				<li>🍫 ${ingredients.chips}g Chips</li>
+			`;
+		}
 
-        // audio
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		slider.oninput = function() {
+			bereken();
+			updateCookiePhysics();
+			playPop(this.value);
 
-        function playPop(aantal) {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+			document.querySelectorAll('#list li').forEach(card => {
+				card.classList.remove('bump-effect');
+				void card.offsetWidth;
+				card.classList.add('bump-effect');
+			});
 
-            oscillator.type = 'sine';
-            const startFreq = 400 + (aantal * 5);
-            oscillator.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+			if (navigator.vibrate) navigator.vibrate(10);
+			tekst.classList.remove('count-bump');
+			void tekst.offsetWidth;
+			tekst.classList.add('count-bump');
+		};
 
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		function playPop(aantal) {
+			const oscillator = audioCtx.createOscillator();
+			const gainNode = audioCtx.createGain();
+			oscillator.type = 'sine';
+			oscillator.frequency.setValueAtTime(400 + (aantal * 5), audioCtx.currentTime);
+			oscillator.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+			gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+			gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+			oscillator.connect(gainNode);
+			gainNode.connect(audioCtx.destination);
+			oscillator.start();
+			oscillator.stop(audioCtx.currentTime + 0.1);
+		}
 
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.1);
-            
-        }
-    </script>
+		bereken();
+		updateCookiePhysics();
+	</script>
 
 </body>
 </html>
